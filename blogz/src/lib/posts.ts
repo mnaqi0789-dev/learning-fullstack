@@ -1,4 +1,4 @@
-import { collection, query, where, getDocs, limit, addDoc } from "firebase/firestore";
+import { collection, addDoc, query, where, getDocs, limit, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "./firebase";
 export interface Post {
   id: number;
@@ -81,6 +81,43 @@ export async function createPost(post: Post): Promise<string> {
     return docRef.id;
   } catch (e) {
     console.error("Error adding document: ", e);
+    throw e;
+  }
+}
+
+export async function updatePost(slug: string, data: Partial<Post>): Promise<void> {
+  try {
+    const q = query(collection(db, "posts"), where("slug", "==", slug), limit(1));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      throw new Error(`Post with slug "${slug}" not found.`);
+    }
+    const docId = querySnapshot.docs[0].id;
+    const postDocRef = doc(db, "posts", docId);
+
+    await updateDoc(postDocRef, data);
+    console.log(`Document with slug "${slug}" updated successfully.`);
+  } catch (e) {
+    console.error(`Error updating post with slug ${slug}: `, e);
+    throw e;
+  }
+}
+
+export async function deletePost(slug: string): Promise<void> {
+  try {
+    const q = query(collection(db, "posts"), where("slug", "==", slug), limit(1));
+    const querySnapshot = await getDocs(q);
+
+    if (querySnapshot.empty) {
+      throw new Error(`Post with slug "${slug}" not found.`);
+    }
+     const docId = querySnapshot.docs[0].id;
+    const postDocRef = doc(db, "posts", docId);
+    await deleteDoc(postDocRef);
+    console.log(`🗑️ Document with slug "${slug}" deleted successfully.`);
+  } catch (e) {
+    console.error(`Error deleting post with slug ${slug}: `, e);
     throw e;
   }
 }
