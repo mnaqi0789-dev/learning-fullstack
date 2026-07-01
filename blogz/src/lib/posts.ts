@@ -1,7 +1,8 @@
 import { collection, addDoc, query, where, getDocs, limit, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "./firebase";
+
 export interface Post {
-  id: number;
+  id: string;
   title: string;
   slug: string;
   description: string;
@@ -19,16 +20,16 @@ export async function getAllPosts(): Promise<Post[]> {
       const data = doc.data();
 
       return {
-        id: data.id,
-        title: data.title,
-        slug: data.slug,
-        description: data.description,
+        id: doc.id, // Maps the internal Firestore document ID key properly
+        title: data.title || "",
+        slug: data.slug || "",
+        description: data.description || "",
         content: data.content,
-        category: data.category,
-        bannerImage: data.bannerImage,
-        createdAt: data.createdAt?.toDate()
-          ? data.createdAt.toDate()
-          : new Date(data.createdAt),
+        category: data.category || "finance",
+        bannerImage: data.bannerImage || "",
+        createdAt: data.createdAt && typeof data.createdAt.toDate === "function" 
+          ? data.createdAt.toDate() 
+          : new Date(data.createdAt || Date.now()),
       };
     });
 
@@ -43,27 +44,26 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   try {
     const postsRef = collection(db, "posts");
     const q = query(postsRef, where("slug", "==", slug), limit(1));
-
     const querySnapshot = await getDocs(q);
 
     if (querySnapshot.empty) {
       return null;
     }
 
-    const doc = querySnapshot.docs[0];
-    const data = doc.data();
+    const docSnapshot = querySnapshot.docs[0];
+    const data = docSnapshot.data();
 
     return {
-      id: data.id,
-      title: data.title,
-      slug: data.slug,
-      description: data.description,
+      id: docSnapshot.id,
+      title: data.title || "",
+      slug: data.slug || "",
+      description: data.description || "",
       content: data.content,
-      category: data.category,
-      bannerImage: data.bannerImage,
+      category: data.category || "finance",
+      bannerImage: data.bannerImage || "",
       createdAt: data.createdAt?.toDate()
         ? data.createdAt.toDate()
-        : new Date(data.createdAt),
+        : new Date(data.createdAt || Date.now()),
     };
   } catch (e) {
     console.error(`Error fetching post with slug ${slug}: `, e);
@@ -71,11 +71,14 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   }
 }
 
-export async function createPost(post: Post): Promise<string> {
+export async function createPost(post: Omit<Post, "id"> & { id?: string }): Promise<string> {
   try {
     const postsRef = collection(db, "posts");
-    const docRef = await addDoc(postsRef, post);
     
+    // Deconstruct fields to omit client-side empty id string from being written as a property
+    const { id, ...firebasePayload } = post;
+    
+    const docRef = await addDoc(postsRef, firebasePayload);
     console.log("Document successfully written with ID: ", docRef.id);
     
     return docRef.id;
@@ -85,7 +88,7 @@ export async function createPost(post: Post): Promise<string> {
   }
 }
 
-export async function updatePost(slug: string, data: Partial<Post>): Promise<void> {
+export async function updatePost(slug: string, data: Partial<Omit<Post, "id">>): Promise<void> {
   try {
     const q = query(collection(db, "posts"), where("slug", "==", slug), limit(1));
     const querySnapshot = await getDocs(q);
@@ -112,8 +115,9 @@ export async function deletePost(slug: string): Promise<void> {
     if (querySnapshot.empty) {
       throw new Error(`Post with slug "${slug}" not found.`);
     }
-     const docId = querySnapshot.docs[0].id;
+    const docId = querySnapshot.docs[0].id;
     const postDocRef = doc(db, "posts", docId);
+    
     await deleteDoc(postDocRef);
     console.log(`🗑️ Document with slug "${slug}" deleted successfully.`);
   } catch (e) {
