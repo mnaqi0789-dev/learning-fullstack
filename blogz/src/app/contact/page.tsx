@@ -1,7 +1,267 @@
-import React from "react";
+// app/contact/page.tsx
+"use client";
 
-const contact = () => {
-  return <div>Contact</div>;
+import { useState } from "react";
+import { Mail, Phone, MapPin, Loader2 } from "lucide-react";
+import { z } from "zod";
+
+const contactSchema = z.object({
+  firstName: z.string().trim().min(1, "First name is required").max(50),
+  lastName: z.string().trim().min(1, "Last name is required").max(50),
+  email: z.string().trim().email("Enter a valid email").max(255),
+  phone: z
+    .string()
+    .trim()
+    .min(6, "Enter a valid phone number")
+    .max(20)
+    .regex(/^[+\d\s()-]+$/, "Only digits and + ( ) - allowed"),
+  message: z
+    .string()
+    .trim()
+    .min(10, "Message must be at least 10 characters")
+    .max(1000, "Message must be under 1000 characters"),
+});
+
+type FormState = z.infer<typeof contactSchema>;
+type Errors = Partial<Record<keyof FormState, string>>;
+
+const initialForm: FormState = {
+  firstName: "",
+  lastName: "",
+  email: "",
+  phone: "",
+  message: "",
 };
 
-export default contact;
+export default function ContactPage() {
+  const [form, setForm] = useState<FormState>(initialForm);
+  const [errors, setErrors] = useState<Errors>({});
+  const [status, setStatus] = useState<"idle" | "sending" | "sent">("idle");
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+    if (errors[name as keyof FormState]) {
+      setErrors((prev) => ({ ...prev, [name]: undefined }));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const result = contactSchema.safeParse(form);
+    if (!result.success) {
+      const fieldErrors: Errors = {};
+      result.error.issues.forEach((issue) => {
+        const key = issue.path[0] as keyof FormState;
+        if (!fieldErrors[key]) fieldErrors[key] = issue.message;
+      });
+      setErrors(fieldErrors);
+      return;
+    }
+
+    setStatus("sending");
+    try {
+      // TODO: replace with your API call (e.g. fetch("/api/contact"))
+      await new Promise((r) => setTimeout(r, 900));
+      setStatus("sent");
+      setForm(initialForm);
+      setTimeout(() => setStatus("idle"), 3500);
+    } catch {
+      setStatus("idle");
+    }
+  };
+
+  const inputBase =
+    "w-full rounded-lg border bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 outline-none transition-colors focus:border-[#1e3a8a] focus:ring-2 focus:ring-[#1e3a8a]/15";
+
+  const errorClass = (field: keyof FormState) =>
+    errors[field] ? "border-red-400" : "border-slate-200";
+
+  return (
+    <section className="mx-auto grid min-h-[calc(100vh-8rem)] max-w-7xl grid-cols-1 items-start gap-14 px-6 py-16 lg:grid-cols-2 lg:py-24">
+      {/* Left — copy + info */}
+      <div className="flex flex-col">
+        <span className="inline-flex w-fit items-center gap-2 rounded-md border border-slate-200 bg-white px-2.5 py-1 text-xs font-medium text-slate-600 shadow-sm">
+          <Mail className="h-3.5 w-3.5 text-[#1e3a8a]" />
+          Contact
+        </span>
+
+        <h1 className="mt-6 font-serif text-5xl leading-[1.05] tracking-tight text-[#1e3a8a] sm:text-6xl">
+          How can we
+          <br />
+          help you <span className="text-[#2563eb]">today?</span>
+        </h1>
+
+        <p className="mt-5 max-w-md text-base leading-relaxed text-slate-600">
+          Questions, pitches, or just want to say hi? Our tiny editorial team
+          reads every message and usually replies within a day.
+        </p>
+
+        <div className="mt-10 space-y-5">
+          <InfoRow
+            icon={<Mail className="h-4 w-4 text-[#1e3a8a]" />}
+            label="Email"
+            value="hello@blogz.com"
+          />
+          <InfoRow
+            icon={<Phone className="h-4 w-4 text-[#1e3a8a]" />}
+            label="Phone"
+            value="+1 (800) 123-4567"
+          />
+          <InfoRow
+            icon={<MapPin className="h-4 w-4 text-[#1e3a8a]" />}
+            label="Location"
+            value="Silicon Valley, CA 94043 United States"
+          />
+        </div>
+      </div>
+
+      {/* Right — form card */}
+      <form
+        onSubmit={handleSubmit}
+        noValidate
+        className="rounded-2xl border border-slate-200 bg-white/80 p-6 shadow-[0_20px_50px_-25px_rgba(30,58,138,0.25)] backdrop-blur-sm sm:p-8"
+      >
+        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <Field label="First name" error={errors.firstName} required>
+            <input
+              name="firstName"
+              value={form.firstName}
+              onChange={handleChange}
+              placeholder="Billy"
+              maxLength={50}
+              className={`${inputBase} ${errorClass("firstName")}`}
+            />
+          </Field>
+          <Field label="Last name" error={errors.lastName} required>
+            <input
+              name="lastName"
+              value={form.lastName}
+              onChange={handleChange}
+              placeholder="Jhons"
+              maxLength={50}
+              className={`${inputBase} ${errorClass("lastName")}`}
+            />
+          </Field>
+        </div>
+
+        <div className="mt-5">
+          <Field label="Work email" error={errors.email} required>
+            <input
+              name="email"
+              type="email"
+              value={form.email}
+              onChange={handleChange}
+              placeholder="Enter email"
+              maxLength={255}
+              className={`${inputBase} ${errorClass("email")}`}
+            />
+          </Field>
+        </div>
+
+        <div className="mt-5">
+          <Field label="Phone number" error={errors.phone} required>
+            <input
+              name="phone"
+              type="tel"
+              value={form.phone}
+              onChange={handleChange}
+              placeholder="+1 (555) 000-0000"
+              maxLength={20}
+              className={`${inputBase} ${errorClass("phone")}`}
+            />
+          </Field>
+        </div>
+
+        <div className="mt-5">
+          <Field label="Message" error={errors.message} required>
+            <textarea
+              name="message"
+              value={form.message}
+              onChange={handleChange}
+              placeholder="Enter a question, feedback, or suggestion..."
+              rows={5}
+              maxLength={1000}
+              className={`${inputBase} resize-none ${errorClass("message")}`}
+            />
+            <div className="mt-1 text-right text-xs text-slate-400">
+              {form.message.length}/1000
+            </div>
+          </Field>
+        </div>
+
+        <div className="mt-6 flex items-center justify-between gap-4">
+          <button
+            type="submit"
+            disabled={status === "sending"}
+            className="inline-flex items-center gap-2 rounded-full bg-[#1e3a8a] px-6 py-2.5 text-sm font-medium text-white shadow-[0_10px_30px_-10px_rgba(30,58,138,0.5)] transition-all hover:-translate-y-0.5 hover:bg-[#1e40af] disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            {status === "sending" && (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            )}
+            {status === "sending" ? "Sending..." : "Submit"}
+          </button>
+
+          {status === "sent" && (
+            <span className="text-sm font-medium text-emerald-600">
+              Thanks — we will be in touch shortly.
+            </span>
+          )}
+        </div>
+      </form>
+    </section>
+  );
+}
+
+/* ---------- helpers ---------- */
+
+function InfoRow({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-start gap-3">
+      <span className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-blue-50 ring-1 ring-blue-100">
+        {icon}
+      </span>
+      <div className="min-w-0">
+        <div className="text-xs uppercase tracking-widest text-slate-500">
+          {label}
+        </div>
+        <div className="mt-0.5 text-sm font-semibold text-slate-900">
+          {value}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Field({
+  label,
+  error,
+  required,
+  children,
+}: {
+  label: string;
+  error?: string;
+  required?: boolean;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="block">
+      <span className="mb-1.5 block text-sm font-medium text-slate-700">
+        {label}
+        {required && <span className="text-[#2563eb]">*</span>}
+      </span>
+      {children}
+      {error && <p className="mt-1 text-xs text-red-500">{error}</p>}
+    </label>
+  );
+}
