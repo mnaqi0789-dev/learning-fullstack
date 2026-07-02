@@ -1,6 +1,14 @@
-
-
-import { collection, addDoc, query, where, getDocs, limit, doc, updateDoc, deleteDoc } from "firebase/firestore";
+import {
+  collection,
+  addDoc,
+  query,
+  where,
+  getDocs,
+  limit,
+  doc,
+  updateDoc,
+  deleteDoc,
+} from "firebase/firestore";
 import { db } from "./firebase";
 
 export interface Post {
@@ -22,16 +30,17 @@ export async function getAllPosts(): Promise<Post[]> {
       const data = doc.data();
 
       return {
-        id: doc.id, // Maps the internal Firestore document ID key properly
+        id: doc.id,
         title: data.title || "",
         slug: data.slug || "",
         description: data.description || "",
         content: data.content || "",
         category: data.category || "finance",
         bannerImage: data.bannerImage || "",
-        createdAt: data.createdAt && typeof data.createdAt.toDate === "function" 
-          ? data.createdAt.toDate() 
-          : new Date(data.createdAt || Date.now()),
+        createdAt:
+          data.createdAt && typeof data.createdAt.toDate === "function"
+            ? data.createdAt.toDate()
+            : new Date(data.createdAt || Date.now()),
       };
     });
 
@@ -73,16 +82,17 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
   }
 }
 
-export async function createPost(post: Omit<Post, "id"> & { id?: string }): Promise<string> {
+export async function createPost(
+  post: Omit<Post, "id"> & { id?: string },
+): Promise<string> {
   try {
     const postsRef = collection(db, "posts");
-    
-    // Deconstruct fields to omit client-side empty id string from being written as a property
+
     const { id, ...firebasePayload } = post;
-    
+
     const docRef = await addDoc(postsRef, firebasePayload);
     console.log("Document successfully written with ID: ", docRef.id);
-    
+
     return docRef.id;
   } catch (e) {
     console.error("Error adding document: ", e);
@@ -90,9 +100,16 @@ export async function createPost(post: Omit<Post, "id"> & { id?: string }): Prom
   }
 }
 
-export async function updatePost(slug: string, data: Partial<Omit<Post, "id">>): Promise<void> {
+export async function updatePost(
+  slug: string,
+  data: Partial<Omit<Post, "id">>,
+): Promise<void> {
   try {
-    const q = query(collection(db, "posts"), where("slug", "==", slug), limit(1));
+    const q = query(
+      collection(db, "posts"),
+      where("slug", "==", slug),
+      limit(1),
+    );
     const querySnapshot = await getDocs(q);
 
     if (querySnapshot.empty) {
@@ -111,7 +128,11 @@ export async function updatePost(slug: string, data: Partial<Omit<Post, "id">>):
 
 export async function deletePost(slug: string): Promise<void> {
   try {
-    const q = query(collection(db, "posts"), where("slug", "==", slug), limit(1));
+    const q = query(
+      collection(db, "posts"),
+      where("slug", "==", slug),
+      limit(1),
+    );
     const querySnapshot = await getDocs(q);
 
     if (querySnapshot.empty) {
@@ -119,7 +140,7 @@ export async function deletePost(slug: string): Promise<void> {
     }
     const docId = querySnapshot.docs[0].id;
     const postDocRef = doc(db, "posts", docId);
-    
+
     await deleteDoc(postDocRef);
     console.log(`🗑️ Document with slug "${slug}" deleted successfully.`);
   } catch (e) {

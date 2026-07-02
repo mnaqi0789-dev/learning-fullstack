@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 interface AuthUser {
   uid: string;
@@ -12,6 +12,6 @@ interface AuthState {
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  currentUser: null, 
-  setUser: (user) => set({ currentUser: user }), 
+  currentUser: null,
+  setUser: (user) => set({ currentUser: user }),
 }));

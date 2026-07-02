@@ -12,23 +12,24 @@ const categoryLabels: Record<Post["category"], string> = {
 };
 
 export default function PostCard({ post }: PostCardProps) {
-  // Safe date parsing fallback in case a document is missing its date object
-  const formattedDate = post.createdAt instanceof Date 
-    ? post.createdAt.toLocaleDateString("en-US", {
-        year: "numeric",
-        month: "short",
-        day: "numeric",
-      })
-    : "Recent";
+  const formattedDate =
+    post.createdAt instanceof Date
+      ? post.createdAt.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        })
+      : "Recent";
 
-  // FIXED: Prevents Next.js Image component from crashing if the src string is empty or invalid
-  const cleanImageSrc = post.bannerImage && post.bannerImage.trim() !== "" 
-    ? post.bannerImage 
-    : "https://images.unsplash.com/photo-1499750310107-5fef28a66643"; // Reliable tech placeholder
+  const cleanImageSrc =
+    post.bannerImage && post.bannerImage.trim() !== ""
+      ? post.bannerImage
+      : "https://images.unsplash.com/photo-1499750310107-5fef28a66643"; 
 
   return (
     <Link
-href={`/blog/${post.slug || '#'}`}      className="group block overflow-hidden rounded-2xl border border-slate-200/80 bg-white/70 backdrop-blur-xl shadow-[0_8px_30px_-12px_rgba(30,58,138,0.12)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_-15px_rgba(30,58,138,0.25)] hover:border-blue-200"
+      href={`/blog/${post.slug || "#"}`}
+      className="group block overflow-hidden rounded-2xl border border-slate-200/80 bg-white/70 backdrop-blur-xl shadow-[0_8px_30px_-12px_rgba(30,58,138,0.12)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_20px_40px_-15px_rgba(30,58,138,0.25)] hover:border-blue-200"
     >
       {/* Banner */}
       <div className="relative aspect-[16/9] w-full overflow-hidden bg-slate-100">

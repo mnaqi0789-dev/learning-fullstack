@@ -8,7 +8,11 @@ type Props = {
   placeholder?: string;
 };
 
-export default function SearchBar({ value, onChange, placeholder = "Search posts..." }: Props) {
+export default function SearchBar({
+  value,
+  onChange,
+  placeholder = "Search posts...",
+}: Props) {
   return (
     <div className="relative flex items-center">
       <Search className="pointer-events-none absolute left-3 h-4 w-4 text-slate-400" />

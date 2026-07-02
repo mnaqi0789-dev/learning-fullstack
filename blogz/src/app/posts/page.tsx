@@ -1,5 +1,3 @@
-
-
 "use client";
 
 import React, { useMemo } from "react";
@@ -14,9 +12,10 @@ const PostsPage = () => {
 
   const filteredPosts = useMemo(() => {
     const query = search.trim().toLowerCase();
-    
+
     return posts.filter((post) => {
-      const matchesCategory = category === "all" ? true : post.category === category;
+      const matchesCategory =
+        category === "all" ? true : post.category === category;
       if (!matchesCategory) return false;
 
       if (!query) return true;
@@ -31,7 +30,9 @@ const PostsPage = () => {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
-        <span className="ml-2 text-slate-600 font-medium">Loading posts...</span>
+        <span className="ml-2 text-slate-600 font-medium">
+          Loading posts...
+        </span>
       </div>
     );
   }
@@ -40,7 +41,9 @@ const PostsPage = () => {
     return (
       <div className="mx-auto max-w-md my-12 p-6 rounded-2xl border border-red-200 bg-red-50 text-center text-red-700">
         <h3 className="font-bold text-lg">Failed to load posts</h3>
-        <p className="text-sm mt-1">{(error as Error)?.message || "Unknown error occurred"}</p>
+        <p className="text-sm mt-1">
+          {(error as Error)?.message || "Unknown error occurred"}
+        </p>
       </div>
     );
   }
@@ -52,7 +55,8 @@ const PostsPage = () => {
           Posts
         </h1>
         <p className="text-sm text-slate-500">
-          {filteredPosts.length} {filteredPosts.length === 1 ? "post" : "posts"} found
+          {filteredPosts.length} {filteredPosts.length === 1 ? "post" : "posts"}{" "}
+          found
         </p>
       </header>
 
