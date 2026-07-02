@@ -1,13 +1,16 @@
+
+
 "use client";
 
 import React, { useMemo } from "react";
 import { usePosts } from "@/hooks/usePosts";
-import { usePostsFilter } from "@/context/PostsFilterContext";
+import { useFilterStore } from "@/store/filterStore";
 import PostGrid from "@/components/PostGrid";
 
 const PostsPage = () => {
   const { data: posts = [], isLoading, isError, error } = usePosts();
-  const { search, category } = usePostsFilter();
+  const search = useFilterStore((state) => state.search);
+  const category = useFilterStore((state) => state.activeCategory);
 
   const filteredPosts = useMemo(() => {
     const query = search.trim().toLowerCase();
@@ -43,7 +46,6 @@ const PostsPage = () => {
   }
 
   return (
-    // pt-28 provides safe breathing room below the fixed navigation bubble
     <main className="mx-auto max-w-7xl px-4 pt-28 pb-12 sm:px-6 lg:px-8">
       <header className="mb-10 space-y-1">
         <h1 className="text-3xl font-semibold tracking-tight text-blue-600">

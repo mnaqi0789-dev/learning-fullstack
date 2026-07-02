@@ -1,10 +1,12 @@
+
+
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import SearchBar from "./SearchBar";
 import CategoryFilter from "./CategoryFilter";
-import { usePostsFilter } from "@/context/PostsFilterContext";
+import { useFilterStore } from "@/store/filterStore";
 
 const navLinks = [
   { href: "/posts", label: "Posts" },
@@ -15,7 +17,10 @@ const navLinks = [
 export default function Navbar() {
   const pathname = usePathname();
   const onPosts = pathname === "/posts" || pathname.startsWith("/posts/");
-  const { search, setSearch, category, setCategory } = usePostsFilter();
+  const search = useFilterStore((state) => state.search);
+  const setSearch = useFilterStore((state) => state.setSearch);
+  const category = useFilterStore((state) => state.activeCategory);
+  const setCategory = useFilterStore((state) => state.setCategory);
 
   return (
     <nav className="fixed top-4 left-1/2 z-50 w-full max-w-6xl -translate-x-1/2 px-4">

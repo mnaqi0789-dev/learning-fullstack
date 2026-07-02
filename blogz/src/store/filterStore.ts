@@ -1,11 +1,18 @@
-import { create } from 'zustand';
+
+
+import { create } from "zustand";
+import type { Category } from "@/components/CategoryFilter";
 
 interface FilterState {
-  activeCategory: 'all' | 'finance' | 'tech';
-  setCategory: (category: 'all' | 'finance' | 'tech') => void;
+  activeCategory: Category;
+  setCategory: (category: Category) => void;
+  search: string;
+  setSearch: (search: string) => void;
 }
 
 export const useFilterStore = create<FilterState>((set) => ({
-  activeCategory: 'all', 
-  setCategory: (category) => set({ activeCategory: category }), 
+  activeCategory: "all",
+  setCategory: (category) => set({ activeCategory: category }),
+  search: "",
+  setSearch: (search) => set({ search }),
 }));

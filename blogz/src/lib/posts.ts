@@ -1,3 +1,5 @@
+
+
 import { collection, addDoc, query, where, getDocs, limit, doc, updateDoc, deleteDoc } from "firebase/firestore";
 import { db } from "./firebase";
 
@@ -6,7 +8,7 @@ export interface Post {
   title: string;
   slug: string;
   description: string;
-  content: unknown;
+  content: string;
   category: "finance" | "compsci";
   bannerImage: string;
   createdAt: Date;
@@ -24,7 +26,7 @@ export async function getAllPosts(): Promise<Post[]> {
         title: data.title || "",
         slug: data.slug || "",
         description: data.description || "",
-        content: data.content,
+        content: data.content || "",
         category: data.category || "finance",
         bannerImage: data.bannerImage || "",
         createdAt: data.createdAt && typeof data.createdAt.toDate === "function" 
@@ -58,7 +60,7 @@ export async function getPostBySlug(slug: string): Promise<Post | null> {
       title: data.title || "",
       slug: data.slug || "",
       description: data.description || "",
-      content: data.content,
+      content: data.content || "",
       category: data.category || "finance",
       bannerImage: data.bannerImage || "",
       createdAt: data.createdAt?.toDate()
